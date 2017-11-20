@@ -14,6 +14,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
 import numpy as np
+import statsmodels.formula.api as smf
 
 priceRegex = '(0-9*)</span>'
 
@@ -37,14 +38,25 @@ for y in years:
     final = [float(n) for n in prices]
     output[y] = final
 
-    
-#------------------------------------
-final = pd.DataFrame(data = final)
+PricesDF = pd.DataFrame({k:pd.Series(v[:200]) for k,v in output.items()})
 
-final.boxplot()
+PricesDF.boxplot()
+PricesDF.mean()
 
-newprice = []
-newprice[1] = prices 
-prices[1:]
+
+mPricesDF = pd.melt(PricesDF, value_vars=['2013', '2014', '2015', '2016', '2017'])
+mPricesDF.head()
+mPricesDF.plot.scatter(x = 'value', y = 'variable')
+
+
+
+#------------------------------------below does not work - just experiments 
+
+lmod = smf.ols(formula='value ~ variable', data=mPricesDF)
+
+res = lmod.fit()
+
+print(res.summary())
+
 
 final.mean()
