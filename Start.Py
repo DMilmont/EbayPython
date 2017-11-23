@@ -11,9 +11,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import pandas as pd
-import matplotlib.pyplot as plt
-from scipy import stats
-import numpy as np
+import seaborn as sns
 import statsmodels.formula.api as smf
 
 priceRegex = '(0-9*)</span>'
@@ -46,17 +44,31 @@ PricesDF.mean()
 
 mPricesDF = pd.melt(PricesDF, value_vars=['2013', '2014', '2015', '2016', '2017'])
 mPricesDF.head()
-mPricesDF.plot.scatter(x = 'value', y = 'variable')
 
 
+#violin plot of price per year 
+ax = sns.violinplot(x="variable", y="value",
+                    data=mPricesDF,
+                    scale="width", palette="Set3")
 
-#------------------------------------below does not work - just experiments 
+#avg price per year 
+pricePredict = (mPricesDF.groupby(["variable"])
+                   .value
+                   .mean()
+                   .reset_index(name="avgPrice"))
 
-lmod = smf.ols(formula='value ~ variable', data=mPricesDF)
+pricePredict['variable'] = pricePredict['variable'].apply(int)
+pricePredict['year'] = pricePredict['variable'].apply(str)
+
+#plot lm fit 
+sns.regplot(x="variable", y="avgPrice", data=pricePredict)
+
+#lm 
+lmod = smf.ols(formula='avgPrice ~ year', data=pricePredict)
 
 res = lmod.fit()
 
 print(res.summary())
 
 
-final.mean()
+
